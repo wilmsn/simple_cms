@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>CMS Edit</title>
+
+<link type="text/css" rel="stylesheet" href="/css/jquery-te-1.4.0.css">
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/jquery-te-1.4.0.min.js" charset="utf-8"></script>
+<style type="text/css">
+
+textarea {
+	display:block;
+	margin:0 0 10px;
+	padding:6px;
+	width:95%;
+	background:#FFF;
+	border:#AAA 1px solid;
+	font-size:13px;
+	height:500px;
+}
+
+.jqte_editor {
+	height:500px;
+}
+
+</style>
+<script  language="JavaScript">
+
+var is_blur=false;
+var is_changed=false;
+var mytopic="";
+var myversion="";
+
+$(function(){
+    $.post( "/admin/cmsfill.php", { action: "loadtopic"  }, function( data ) {
+      $('#topic').html(data);
+      $('#topic_del').html(data);
+    });
+    $('#version_del').html("<option value=''>??</option>");
+
+  $('#topic_del').on('change', function() {
+    $.post( "/admin/cmsfill.php", { action: "loadversionselect", topic_del: $('#topic_del').val()  },function( data ) {
+      $('#version_del').html(data);
+    });
+  });
+  $('#topic').on('change', function() {
+    if (is_changed) {
+      if (confirm("Inhalt speichern?") ){
+       $.post( "/admin/cmsfill.php", { action: "savetext", text: $('.jqte_editor').html(), version: $('#version').val(), topic: mytopic  },function( data ) {
+         alert(data);
+       });
+      } else {
+         alert("Nicht gespeichert!");
+      }
+    }
+    mytopic=$('#topic').val();
+    $.post( "/admin/cmsfill.php", { action: "loadversion", topic: this.value  }, function( data ) {
+      $('#version').val(data);
+      $.post( "/admin/cmsfill.php", { action: "loadtext", version: $('#version').val(), topic: $('#topic').val()  },function( data ) {
+        $("#jqTE_edit").jqteVal(data); 
+      });
+    });
+    is_changed=false;
+  });
+
+//  $('#jqTE_edit').jqte();
+  $("#jqTE_edit").jqte({change: function(){ is_changed=true; }});
+//     if (confirm("Inhalt speichern?") ){
+//       $.post( "/admin/cmsfill.php", { action: "savetext", text: $('.jqte_editor').html(), version: $('#version').val(), topic: $('#topic').val()  },function( data ) {
+//         alert(data);
+//       });
+//     } else {
+//       alert ("Nicht gespeichert");
+//     }  
+//  }});
+  $('#jqTE_save').click(function() {
+    $.post( "/admin/cmsfill.php", { action: "savetext", text: $('.jqte_editor').html(), version: $('#version').val(), topic: $('#topic').val()  },function( data ) {
+      alert(data);      
+    });
+  });
+  $('#jqTE_load').click(function() {
+    $.post( "/admin/cmsfill.php", { action: "loadtext", version: $('#version').val(), topic: $('#topic').val()  },function( data ) {
+        $("#jqTE_edit").jqteVal(data); 
+    });
+  });
+  $('#jqTE_del').click(function() {
+    $.post( "/admin/cmsfill.php", { action: "delete", version_del: $('#version_del').val(), topic_del: $('#topic_del').val()},function( data ) {
+      $('#topic').html(data);      
+      $('#topic_del').html(data);      
+    });
+  });
+  $('#jqTE_new').click(function() {
+    $.post( "/admin/cmsfill.php", { action: "newtopic", newtopic: $('#newtopic').val()  },function( data ) {
+//      alert(data);
+      $('#topic').html(data);      
+      $('#topic_del').html(data);      
+    });
+  });
+}); 
+
+window.onbeforeunload = function() {
+  return "confirmExit";
+}
+
+//function confirmExit() {
+//  return "You have attempted to leave this page. Are you sure?";
+//   return ".";
+//}
+
+
+</script>
+
+
+</head>
+
+<body>
+<table><tr><td>
+<table border=1><tr><td>
+Thema:<select id="topic" size=1></select>
+Version:<input id="version" value="" size="4" maxlength="4">
+<button id="jqTE_save">Speichern</button>
+<button id="jqTE_load">Laden</button>
+</td></tr></table>
+</td><td>
+<table border=1><tr><td>
+Neues Thema:<input id="newtopic" value="" size="20" maxlength="20">
+<button id="jqTE_new">Thema anlegen</button>
+</td></tr></table>
+</td><td>
+<table border=1><tr><td>
+Thema:<select id="topic_del" size=1></select>
+Version:<select id="version_del" size=1></select>
+<button id="jqTE_del">Thema l&ouml;schen</button>
+</td></tr></table>
+</td></tr></table>
+
+<textarea id="jqTE_edit" name="textarea"></textarea>
+
+</body>
+</html>

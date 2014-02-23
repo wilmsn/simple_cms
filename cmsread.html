@@ -1,0 +1,25 @@
+<?php
+$DB_FILENAME="/var/database/myCMS.db";
+$db = new SQLite3($DB_FILENAME);
+
+if (!empty($_GET)) {
+  if ( !empty($_GET["topic"]) && is_numeric($_GET["topic"])) {
+    $mytopicid=$_GET["topic"]*1;    
+    $htmlstr="<meta charset='utf-8' />";
+    $results = $db->query("SELECT max(version) from doku where topicid=$mytopicid ");
+    $row = $results->fetchArray();
+    $myversion=$row[0];
+    $results = $db->query("SELECT text, seq FROM doku where topicid=$mytopicid and version=$myversion order by seq");
+    while ($row = $results->fetchArray()) {
+        $htmlstr=$htmlstr.$row[0];
+    }
+    echo $htmlstr; 
+  } else {
+    echo "<h1>Fehlerhafter Aufruf</h1>";
+  }
+}
+
+$db->close();
+
+?>
+
